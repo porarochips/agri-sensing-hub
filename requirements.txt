@@ -1,0 +1,8 @@
+streamlit
+pymongo
+certifi
+google-genai
+python-dotenv
+qrcode
+reportlab
+pillow
