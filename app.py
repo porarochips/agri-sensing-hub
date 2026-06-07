@@ -8,7 +8,25 @@ from dotenv import load_dotenv
 from pymongo import MongoClient
 from google import genai
 from google.genai import types
+# 1. Clear any broken local system environment defaults
+if "GEMINI_API_KEY" in os.environ:
+    del os.environ["GEMINI_API_KEY"]
 
+# 2. Extract key from Streamlit's absolute cloud workspace
+if "GEMINI_API_KEY" in st.secrets:
+    api_key_string = st.secrets["GEMINI_API_KEY"]
+else:
+    # Local developer fallback (.env file usage)
+    from dotenv import load_model, load_dotenv
+    load_dotenv()
+    api_key_string = os.getenv("GEMINI_API_KEY", "")
+
+# 3. Force the Google SDK client configuration to lock onto the validated string
+# Create the modern client object using your validated key string
+client = genai.Client(api_key=api_key_string)
+
+# Note: If your code uses the newer client layout, initialize it directly:
+# client = genai.Client(api_key=api_key_string)
 # Import ReportLab components for high-fidelity PDF serialization
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image, Table, TableStyle
