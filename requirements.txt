@@ -6,4 +6,3 @@ python-dotenv
 qrcode
 reportlab
 pillow
-segno
