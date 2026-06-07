@@ -16,7 +16,7 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
 import os
 import streamlit as st
-import google.generativeai as genai  # Or your specific SDK client module
+ # Or your specific SDK client module
 
 # 1. Clear any broken local system environment defaults
 if "GEMINI_API_KEY" in os.environ:
