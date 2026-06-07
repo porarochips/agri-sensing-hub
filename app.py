@@ -32,7 +32,8 @@ else:
     api_key_string = os.getenv("GEMINI_API_KEY", "")
 
 # 3. Force the Google SDK client configuration to lock onto the validated string
-genai.configure(api_key=api_key_string)
+# Create the modern client object using your validated key string
+client = genai.Client(api_key=api_key_string)
 
 # Note: If your code uses the newer client layout, initialize it directly:
 # client = genai.Client(api_key=api_key_string)
