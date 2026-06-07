@@ -1,7 +1,7 @@
 import streamlit as st
 import os
 import uuid
-import segno
+import qrcode
 from io import BytesIO
 from google import genai
 from pymongo import MongoClient
@@ -104,14 +104,7 @@ if st.button("Finalize Harvest"):
     # 1. Generate the unique transaction identifier sequence
     generated_certificate_id = "CERT-" + str(uuid.uuid4())[:8].upper()
 
-    # 2. Build the live multi-page verification link pointing to your pages/verify.py routing
-    live_app_base_url = "https://agri-sensing-app-tps9arrbjuqdgewjtrhrty.streamlit.app/verify"
-    verification_url = f"{live_app_base_url}?cert_id={generated_certificate_id}"
-
-    # 3. Create the optimized high-density QR asset matrix using segno
-    qr_asset = segno.make(verification_url)
-    
-    # 4. Sync the record dictionary structure directly to your MongoDB Atlas Cluster
+    # 2. Sync the record dictionary structure directly to your MongoDB Atlas Cluster
     try:
         certificate_document = {
             "farm_id": farmer_id,
@@ -129,15 +122,29 @@ if st.button("Finalize Harvest"):
         certs_collection.insert_one(certificate_document)
         st.success(f"✅ Data successfully synced to Atlas! Ledger Reference ID: {generated_certificate_id}")
         
-        # 5. Render the high-density QR code asset safely to the viewport
-        qr_asset.save("current_passport_qr.png", scale=5)
-        st.image("current_passport_qr.png", caption="Scan to verify this harvest on the mobile ledger portal")
-        
     except Exception as db_error:
         st.error(f"❌ Failed to write to ledger cluster: {db_error}")
         st.stop()
 
-    # 6. ReportLab PDF Generation Asset Registry Execution Pipeline
+    # 3. Generate QR Code Graphic Matrix Layer using qrcode library
+    try:
+        demo_lookup_url = f"https://agrilink.streamlit.app/verify?cert_id={generated_certificate_id}"
+        qr = qrcode.QRCode(version=1, box_size=10, border=2)
+        qr.add_data(demo_lookup_url)
+        qr.make(fit=True)
+        qr_img = qr.make_image(fill_color="#0e1117", back_color="white")
+        
+        qr_buf = BytesIO()
+        qr_img.save(qr_buf, format="PNG")
+        qr_bytes = qr_buf.getvalue()
+        
+        # Render Preview Image on Dashboard UI
+        st.markdown("### 🪪 Your Scannable Marketplace Token:")
+        st.image(qr_bytes, caption=f"ID Reference: {generated_certificate_id}", width=220)
+    except Exception as qr_error:
+        st.error(f"⚠️ QR Generation warning: {qr_error}")
+
+    # 4. ReportLab PDF Generation Asset Registry Execution Pipeline
     try:
         st.info("📄 Generating Secure Trade Passport Document...")
         pdf_buf = BytesIO()
@@ -162,7 +169,7 @@ if st.button("Finalize Harvest"):
         ]
         doc.build(story)
         
-        # Serve the finalized asset directly as a downloadable UI download trigger button
+        # Serve the finalized asset directly as a downloadable UI trigger button
         st.download_button(
             label="📥 Download Verified PDF Certificate",
             data=pdf_buf.getvalue(),
