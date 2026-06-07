@@ -46,7 +46,34 @@ else:
 
 # Pass gemini_key directly when initializing your Google GenAI client
 # Example: client = genai.Client(api_key=gemini_key)
+# --- Safe Cloud & Local Credential Extraction ---
+if "GEMINI_API_KEY" in st.secrets:
+    api_key_string = st.secrets["GEMINI_API_KEY"]
+    mongo_uri_string = st.secrets["MONGO_URI"]
+else:
+    # Local fallback using standard dotenv setup
+    from dotenv import load_dotenv
+    load_dotenv()
+    api_key_string = os.getenv("GEMINI_API_KEY", "")
+    mongo_uri_string = os.getenv("MONGO_URI", "")
 
+# Line 50: Keep this exactly as you have it in your screenshot
+ai_client = genai.Client(api_key=api_key_string)
+
+# Line 52: Change os.getenv("MONGO_URI") to your verified mongo_uri_string
+try:
+    db_client = MongoClient(
+        mongo_uri_string,  # Use the newly extracted variable here!
+        tls=True,
+        tlsCAFile=certifi.where(),
+        tlsAllowInvalidCertificates=True
+    )
+    db = db_client["agritech_db"]
+    farms_collection = db["farms"]
+    certs_collection = db["certificates"]
+except Exception as connection_error:
+    st.error(f"Database infrastructure link failure: {connection_error}")
+    st.stop()
 ai_client = genai.Client(api_key=api_key_string)
 
 try:
