@@ -47,7 +47,7 @@ else:
 # Pass gemini_key directly when initializing your Google GenAI client
 # Example: client = genai.Client(api_key=gemini_key)
 
-ai_client = genai.Client()
+ai_client = genai.Client(api_key=api_key_string)
 
 try:
     db_client = MongoClient(
