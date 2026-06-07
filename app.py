@@ -20,9 +20,14 @@ from reportlab.lib import colors
 # =====================================================================
 load_dotenv()
 
-if not os.getenv("GEMINI_API_KEY") or not os.getenv("MONGO_URI"):
-    st.error("CRITICAL CONFIGURATION ERROR: Credentials are missing from your hidden .env file.")
-    st.stop()
+# Foolproof API Key retrieval for both local dev and Streamlit Cloud
+if "GEMINI_API_KEY" in st.secrets:
+    gemini_key = st.secrets["GEMINI_API_KEY"]
+else:
+    gemini_key = os.getenv("GEMINI_API_KEY")
+
+# Pass gemini_key directly when initializing your Google GenAI client
+# Example: client = genai.Client(api_key=gemini_key)
 
 ai_client = genai.Client()
 
