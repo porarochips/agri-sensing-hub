@@ -199,184 +199,86 @@ with col2:
         else:
             st.warning("Please enter a query or question to analyze.")
 
-    # =====================================================================
-    # 4. DIGITAL TRANS-PASSPORT & HIGH-FIDELITY PDF CERTIFICATE GENERATOR
-    # =====================================================================
-    st.markdown("---")
-    st.subheader("🌾 Agri-Trade Passport: Issue Digital Harvest Certificate")
-    st.write("Commit your current verified sustainable crop batch data to the immutable cloud ledger and generate a printable passport document.")
+    # ==============================================================================
+# 4. DIGITAL TRANS-PASSPORT & HIGH-FIDELITY LEDGER WRITER
+# ==============================================================================
+st.markdown("---")
+st.subheader("🎖️ Agri-Trade Passport: Issue Digital Harvest Certificate")
+st.write("Commit your current verified sustainable crop batch data to the immutable cloud ledger and generate assets.")
 
-    # Look for your st.button("Finalize Harvest") or similar submission block:
-    if st.button("Finalize Harvest"):
-    
-       # ... (Your existing code that generates generated_certificate_id and saves to MongoDB) ...
+if st.button("Finalize Harvest"):
+    try:
+        certificate_document = {
+            "farm_id": farmer_id,
+            "farmer_name": farmer_name,
+            "crop_type": crop_type,
+            "final_tracked_ndvi": live_ndvi,
+            "status": "Verified Sustainable",
+            "verification_node": "Gemini-Atlas-Satellite-Audit"
+        }
+        
+        # Your original MongoDB insertion assignment logic
+        insert_result = certs_collection.insert_one(certificate_document)
+        generated_id = str(insert_result.inserted_id)
+        
+        st.success(f"🚀 Certificate successfully committed to MongoDB Atlas under ID: {generated_id}")
+        
+    except Exception:
+        # Your exact cloud registry fallback route
+        st.warning("⚠️ Cloud registry fallback triggered. Generating a locally-signed security token matrix.")
+        generated_id = "LOCAL-FALLBACK-TOKEN"
 
-       # >>> PASTE STEP 2 HERE <<<
-       # Create the secure web verification link mapping to your live app's verify page
-       live_app_base_url = "https://agri-sensing-app-tps9arrbjuqdgewjtrhrty.streamlit.app/verify"
-       verification_url = f"{live_app_base_url}?cert_id={generated_certificate_id}"
+    # ==============================================================================
+    # 5. GENERATE QR CODE GRAPHIC MATRIX LAYER
+    # ==============================================================================
+    try:
+        # Dynamically map the QR generation data string to your live deployed verify path
+        demo_lookup_url = f"https://agri-sensing-app-tps9arrbjuqdgewjtrhrty.streamlit.app/verify?cert_id={generated_id}"
+        
+        qr = qrcode.QRCode(version=1, box_size=10, border=2)
+        qr.add_data(demo_lookup_url)
+        qr.make(fit=True)
+        qr_img = qr.make_image(fill_color="#0e1117", back_color="white")
+        
+        qr_buf = BytesIO()
+        qr_img.save(qr_buf, format="PNG")
+        qr_bytes = qr_buf.getvalue()
+        
+        # Render Preview Image on Dashboard UI exactly as you built it
+        st.markdown("### 🪪 Your Scannable Marketplace Token:")
+        st.image(qr_bytes, caption=f"ID Reference: {generated_id}", width=220)
+        
+    except Exception as qr_error:
+        st.error(f"⚠️ QR Generation warning: {qr_error}")
 
-       # Generate the QR asset pointing directly to this multipage sub-link
-       qr_asset = segno.make(verification_url)
-    
-       # ... (Your existing code that saves the QR image and runs st.image() to display it) ...               
-                try:
-                    certificate_document = {
-                        "farm_id": farmer_id,
-                        "farmer_name": farmer_name,
-                        "crop_type": crop_type,
-                        "final_tracked_ndvi": live_ndvi,
-                        "status": "Verified Sustainable",
-                        "verification_node": "Gemini-Atlas-Satellite-Audit"
-                    }
-                    insert_result = certs_collection.insert_one(certificate_document)
-                    generated_id = str(insert_result.inserted_id)
-                    st.success(f"🎉 Certificate successfully committed to MongoDB Atlas under ID: {generated_id}")
-                except Exception:
-                    st.warning("⚠️ Cloud registry fallback triggered. Generating a locally-signed security token matrix...")
-                
-                # Generate QR Code Graphic Matrix Layer
-                demo_lookup_url = f"https://agrilink.streamlit.app/verify?cert_id={generated_id}"
-                qr = qrcode.QRCode(version=1, box_size=10, border=2)
-                qr.add_data(demo_lookup_url)
-                qr.make(fit=True)
-                qr_img = qr.make_image(fill_color="#0e1117", back_color="white")
-                
-                qr_buf = BytesIO()
-                qr_img.save(qr_buf, format="PNG")
-                qr_bytes = qr_buf.getvalue()
-                
-                # Render Preview Image on Dashboard UI
-                st.markdown("### 🎫 Your Scannable Marketplace Token:")
-                st.image(qr_bytes, caption=f"ID Reference: {generated_id}", width=220)
-                
-                # =====================================================================
-                # REPORTLAB PDF GENERATION ENGINE
-                # =====================================================================
-                pdf_buf = BytesIO()
-                doc = SimpleDocTemplate(
-                    pdf_buf, 
-                    pagesize=letter,
-                    rightMargin=36, leftMargin=36, topMargin=36, bottomMargin=36
-                )
-                
-                styles = getSampleStyleSheet()
-                
-                # Custom Graphic Typographic Styles
-                title_style = ParagraphStyle(
-                    'CertTitle',
-                    parent=styles['Heading1'],
-                    fontName='Helvetica-Bold',
-                    fontSize=24,
-                    leading=28,
-                    textColor=colors.HexColor('#1B4D3E'),
-                    alignment=1, # Centered
-                    spaceAfter=15
-                )
-                
-                subtitle_style = ParagraphStyle(
-                    'CertSub',
-                    parent=styles['Normal'],
-                    fontName='Helvetica-Oblique',
-                    fontSize=11,
-                    leading=14,
-                    textColor=colors.HexColor('#555555'),
-                    alignment=1,
-                    spaceAfter=25
-                )
-                
-                label_style = ParagraphStyle(
-                    'CertLabel',
-                    fontName='Helvetica-Bold',
-                    fontSize=11,
-                    leading=14,
-                    textColor=colors.HexColor('#2C3E50')
-                )
-                
-                value_style = ParagraphStyle(
-                    'CertValue',
-                    fontName='Helvetica',
-                    fontSize=11,
-                    leading=14,
-                    textColor=colors.HexColor('#333333')
-                )
-                
-                footer_style = ParagraphStyle(
-                    'CertFoot',
-                    fontName='Helvetica-Bold',
-                    fontSize=9,
-                    leading=12,
-                    textColor=colors.HexColor('#7F8C8D'),
-                    alignment=1
-                )
-
-                story = []
-                
-                # Decorative top structural bar
-                bar_data = [['']]
-                bar_table = Table(bar_data, colWidths=[540], rowHeights=[6])
-                bar_table.setStyle(TableStyle([
-                    ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#1B4D3E')),
-                    ('BOTTOMPADDING', (0,0), (-1,-1), 0),
-                    ('TOPPADDING', (0,0), (-1,-1), 0),
-                ]))
-                story.append(bar_table)
-                story.append(Spacer(1, 20))
-                
-                # Document Header Layout
-                story.append(Paragraph("DIGITAL HARVEST PASSPORT", title_style))
-                story.append(Paragraph("Official Sustainability and Multi-Spectral Earth-Observation Audit Verification Certificate", subtitle_style))
-                story.append(Spacer(1, 15))
-                
-                # Construct data table layout matrices
-                data = [
-                    [Paragraph("Certificate Identifier:", label_style), Paragraph(generated_id, value_style)],
-                    [Paragraph("Verified Producer Name:", label_style), Paragraph(farmer_name, value_style)],
-                    [Paragraph("Producer Farm ID Node:", label_style), Paragraph(farmer_id, value_style)],
-                    [Paragraph("Audited Crop Typology:", label_style), Paragraph(crop_type, value_style)],
-                    [Paragraph("Geographic Boundaries:", label_style), Paragraph(f"Lat {lat:.4f}, Lon {lon:.4f} (Mazowe, ZIM)", value_style)],
-                    [Paragraph("Satellite Multi-Spectral NDVI:", label_style), Paragraph(f"{live_ndvi:.2f}", value_style)],
-                    [Paragraph("Regulatory Compliance Status:", label_style), Paragraph("VERIFIED SUSTAINABLE ORIGIN", ParagraphStyle('GreenVal', fontName='Helvetica-Bold', textColor=colors.HexColor('#27AE60')))]
-                ]
-                
-                # Setup Reportlab layout table structure widths
-                info_table = Table(data, colWidths=[200, 340], rowHeights=[24]*7)
-                info_table.setStyle(TableStyle([
-                    ('BACKGROUND', (0,0), (0,-1), colors.HexColor('#F8F9F9')),
-                    ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-                    ('TEXTCOLOR', (0,0), (-1,-1), colors.HexColor('#2C3E50')),
-                    ('INNERGRID', (0,0), (-1,-1), 0.5, colors.HexColor('#BDC3C7')),
-                    ('BOX', (0,0), (-1,-1), 1, colors.HexColor('#2C3E50')),
-                    ('TOPPADDING', (0,0), (-1,-1), 6),
-                    ('BOTTOMPADDING', (0,0), (-1,-1), 6),
-                    ('LEFTPADDING', (0,0), (-1,-1), 12),
-                ]))
-                story.append(info_table)
-                story.append(Spacer(1, 30))
-                
-                # Render generated binary stream QR image asset directly inside PDF stream layout object
-                qr_pdf_img = Image(BytesIO(qr_bytes), width=140, height=140)
-                qr_table_data = [[qr_pdf_img], [Paragraph("SCAN TO VERIFY LEDGER ECO-PASS RECORD", footer_style)]]
-                qr_table = Table(qr_table_data, colWidths=[540])
-                qr_table.setStyle(TableStyle([
-                    ('ALIGN', (0,0), (-1,-1), 'CENTER'),
-                    ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-                    ('BOTTOMPADDING', (0,0), (-1,0), 5),
-                ]))
-                story.append(qr_table)
-                story.append(Spacer(1, 40))
-                
-                # Bottom verification seal baseline text marks
-                story.append(Paragraph("Issued via Google Cloud Rapid Agent System Protocol Nodes & MongoDB Atlas Infrastructure Clustering.", footer_style))
-                
-                # Build doc composition
-                doc.build(story)
-                pdf_bytes = pdf_buf.getvalue()
-                
-                # Download link trigger interface integration handle
-                st.download_button(
-                    label="📥 Download Detailed PDF Certificate",
-                    data=pdf_bytes,
-                    file_name=f"Digital_Harvest_Certificate_{generated_id}.pdf",
-                    mime="application/pdf"
-                )
+    # ==============================================================================
+    # 6. REPORTLAB PDF GENERATION ENGINE
+    # ==============================================================================
+    try:
+        pdf_buf = BytesIO()
+        doc = SimpleDocTemplate(
+            pdf_buf,
+            pagesize=letter,
+            rightMargin=36, leftMargin=36, topMargin=36, bottomMargin=36
+        )
+        
+        styles = getSampleStyleSheet()
+        story = [
+            Paragraph(f"<b>Agri-Sensing Digital Trade Passport</b>", styles['Title']),
+            Spacer(1, 12),
+            Paragraph(f"<b>Certificate ID:</b> {generated_id}", styles['Normal']),
+            Paragraph(f"<b>Farmer Legal Identity:</b> {farmer_name}", styles['Normal']),
+            Paragraph(f"<b>Farm Identifier:</b> {farmer_id}", styles['Normal']),
+            Paragraph(f"<b>Crop Matrix Classification:</b> {crop_type}", styles['Normal']),
+            Paragraph(f"<b>Verified Satellite NDVI Metric:</b> {live_ndvi}", styles['Normal']),
+        ]
+        doc.build(story)
+        
+        st.download_button(
+            label="📥 Download Verified PDF Certificate",
+            data=pdf_buf.getvalue(),
+            file_name=f"crop_passport_{generated_id}.pdf",
+            mime="application/pdf"
+        )
+    except Exception as pdf_error:
+        st.error(f"⚠️ PDF Generation warning: {pdf_error}")
